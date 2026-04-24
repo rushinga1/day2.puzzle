@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: mrdev-puzzle-server
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: NODE_ENV
+        value: production
+    # Specify the directory where the server code resides
+    # Note: If you deploy from the root of your repo, 
+    # Render will look for package.json in the root.
+    # We recommend setting the 'Root Directory' to 'server' in the Render Dashboard.
