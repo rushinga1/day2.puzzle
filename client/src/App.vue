@@ -309,6 +309,7 @@ h1 {
   letter-spacing: -2px;
   background: linear-gradient(to right, #6366f1, #a855f7);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -498,6 +499,7 @@ main {
   margin-left: 15px; /* Offset spacing */
   background: linear-gradient(to right, var(--primary), var(--secondary));
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
 }

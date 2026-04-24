@@ -41,6 +41,13 @@ const formatTime = (seconds) => {
       <div class="main-actions">
         <button @click="emit('restart')" class="btn primary">Restart</button>
         <button 
+          @click="emit('solve')"
+          class="btn solve-btn"
+          :disabled="isSolving"
+        >
+          ⚡ SOLVE FAST
+        </button>
+        <button 
           v-if="!isGuest"
           @click="emit('hint')" 
           :class="['btn hint-btn', { active: showHint }]"
@@ -48,15 +55,8 @@ const formatTime = (seconds) => {
         >
           💡 Hint ({{ hintsRemaining }})
         </button>
-        <button 
-          @click="emit('solve')"
-          class="btn solve-btn"
-          :disabled="isSolving"
-        >
-          ⚡ SOLVE FAST
-        </button>
         <div v-else class="guest-msg">
-          Login for full access
+          Login for hints
         </div>
       </div>
       <div class="difficulty-picker">
