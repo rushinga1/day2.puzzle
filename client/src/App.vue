@@ -9,7 +9,7 @@ import AuthView from './components/AuthView.vue';
 import MultiplayerLobby from './components/MultiplayerLobby.vue';
 import { useMultiplayer } from './composables/useMultiplayer';
 
-const { board, size, moves, elapsedTime, isWon, showHint, hintsRemaining, initGame, moveTile, toggleHint } = useSlidingPuzzle();
+const { board, size, moves, elapsedTime, isWon, showHint, hintsRemaining, isSolving, initGame, moveTile, toggleHint, solveFast } = useSlidingPuzzle();
 const { 
   roomCode, opponent, opponentBoard, opponentStats, isMultiplayer, 
   gameStatus, winner, createRoom, joinRoom, sendMove, reportWin 
@@ -189,9 +189,11 @@ window.addEventListener('multiplayer-start', (e) => {
               :showHint="showHint"
               :hintsRemaining="hintsRemaining"
               :isGuest="isGuest"
+              :isSolving="isSolving"
               @restart="handleRestart"
               @changeDifficulty="handleDifficultyChange"
               @hint="toggleHint"
+              @solve="solveFast"
             />
 
             <PuzzleBoard 
@@ -200,6 +202,7 @@ window.addEventListener('multiplayer-start', (e) => {
               :size="size" 
               :isWon="isWon"
               :showHint="showHint"
+              :readonly="isSolving"
               @move="moveTile"
             />
           </div>

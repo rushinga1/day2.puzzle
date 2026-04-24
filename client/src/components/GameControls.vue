@@ -7,10 +7,11 @@ const props = defineProps({
   difficulty: String,
   showHint: Boolean,
   isGuest: Boolean,
-  hintsRemaining: Number
+  hintsRemaining: Number,
+  isSolving: Boolean
 });
 
-const emit = defineEmits(['restart', 'changeDifficulty', 'hint']);
+const emit = defineEmits(['restart', 'changeDifficulty', 'hint', 'solve']);
 
 const formatTime = (seconds) => {
   const mins = Math.floor(seconds / 60);
@@ -43,12 +44,19 @@ const formatTime = (seconds) => {
           v-if="!isGuest"
           @click="emit('hint')" 
           :class="['btn hint-btn', { active: showHint }]"
-          :disabled="hintsRemaining === 0"
+          :disabled="hintsRemaining === 0 || isSolving"
         >
           💡 Hint ({{ hintsRemaining }})
         </button>
+        <button 
+          @click="emit('solve')"
+          class="btn solve-btn"
+          :disabled="isSolving"
+        >
+          ⚡ SOLVE FAST
+        </button>
         <div v-else class="guest-msg">
-          Login for hints
+          Login for full access
         </div>
       </div>
       <div class="difficulty-picker">
@@ -177,6 +185,29 @@ const formatTime = (seconds) => {
   background: rgba(16, 185, 129, 0.2);
   border-color: #10b981;
   color: #10b981;
+}
+
+.hint-btn:disabled, .solve-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.solve-btn {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  padding: 10px 15px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.solve-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.2);
+  transform: translateY(-2px);
 }
 
 .guest-msg {

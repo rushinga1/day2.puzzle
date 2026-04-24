@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue';
+import { ref, onUnmounted } from 'vue';
 
 export function useSlidingPuzzle() {
   const board = ref([]);
@@ -11,6 +11,8 @@ export function useSlidingPuzzle() {
   const isWon = ref(false);
   const showHint = ref(false);
   const hintsRemaining = ref(5);
+  const isSolving = ref(false);
+  const solutionPath = ref([]); // Stores the sequence of tile VALUES to move
 
   const moveSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3');
   const winSound = new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3');
@@ -21,6 +23,7 @@ export function useSlidingPuzzle() {
     elapsedTime.value = 0;
     isGameActive.value = true;
     isWon.value = false;
+    isSolving.value = false;
     stopTimer();
     
     board.value = generateSolvableBoard(newSize);
@@ -31,6 +34,7 @@ export function useSlidingPuzzle() {
     let newBoard = Array.from({ length: s * s }, (_, i) => (i + 1) % (s * s));
     let emptyIndex = newBoard.indexOf(0);
     const shuffleMoves = s * s * 30;
+    const valuesMoved = [];
 
     for (let i = 0; i < shuffleMoves; i++) {
       const neighbors = [];
@@ -41,10 +45,16 @@ export function useSlidingPuzzle() {
       if (col > 0) neighbors.push(emptyIndex - 1);
       if (col < s - 1) neighbors.push(emptyIndex + 1);
 
-      const randomNeighbor = neighbors[Math.floor(Math.random() * neighbors.length)];
-      [newBoard[emptyIndex], newBoard[randomNeighbor]] = [newBoard[randomNeighbor], newBoard[emptyIndex]];
-      emptyIndex = randomNeighbor;
+      const randomNeighborIndex = neighbors[Math.floor(Math.random() * neighbors.length)];
+      const tileValue = newBoard[randomNeighborIndex];
+      
+      valuesMoved.push(tileValue);
+
+      [newBoard[emptyIndex], newBoard[randomNeighborIndex]] = [newBoard[randomNeighborIndex], newBoard[emptyIndex]];
+      emptyIndex = randomNeighborIndex;
     }
+    
+    solutionPath.value = valuesMoved.reverse();
     return isAlreadySolved(newBoard) ? generateSolvableBoard(s) : newBoard;
   };
 
@@ -55,8 +65,10 @@ export function useSlidingPuzzle() {
     return flatBoard[flatBoard.length - 1] === 0;
   };
 
-  const moveTile = (index) => {
-    if (!isGameActive.value || isWon.value) return;
+  const moveTile = (index, isAuto = false) => {
+    if (!isGameActive.value && !isAuto) return;
+    if (isWon.value) return;
+    if (isSolving.value && !isAuto) return;
 
     const emptyIndex = board.value.indexOf(0);
     const row = Math.floor(index / size.value);
@@ -71,16 +83,17 @@ export function useSlidingPuzzle() {
 
     if (isAdjacent) {
       [board.value[index], board.value[emptyIndex]] = [board.value[emptyIndex], board.value[index]];
-      moves.value++;
+      if (!isAuto) moves.value++;
       moveSound.play().catch(() => {});
-      checkWin();
+      checkWin(isAuto);
     }
   };
 
-  const checkWin = () => {
+  const checkWin = (isAuto = false) => {
     if (isAlreadySolved(board.value)) {
       isWon.value = true;
       isGameActive.value = false;
+      isSolving.value = false;
       winSound.play().catch(() => {});
       stopTimer();
     }
@@ -104,27 +117,38 @@ export function useSlidingPuzzle() {
     if (!showHint.value && hintsRemaining.value > 0) {
       showHint.value = true;
       hintsRemaining.value--;
-      
-      // Auto-hide hint after 3 seconds
-      setTimeout(() => {
-        showHint.value = false;
-      }, 3000);
+      setTimeout(() => { showHint.value = false; }, 3000);
     } else {
       showHint.value = false;
     }
   };
 
+  const solveFast = async () => {
+    if (isSolving.value || isWon.value) return;
+    
+    isSolving.value = true;
+    isGameActive.value = false;
+    stopTimer();
+
+    alert("SYSTEM OVERRIDE: YOU FAILED TO SOLVE IT MANUALLY. AUTO-SOLVING...");
+
+    for (const tileValue of solutionPath.value) {
+      if (!isSolving.value) break;
+      
+      const currentTileIndex = board.value.indexOf(tileValue);
+      moveTile(currentTileIndex, true);
+      
+      // Delay for animation effect
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+  };
+
+  onUnmounted(() => {
+    stopTimer();
+  });
+
   return {
-    board,
-    size,
-    moves,
-    elapsedTime,
-    isGameActive,
-    isWon,
-    showHint,
-    hintsRemaining,
-    initGame,
-    moveTile,
-    toggleHint
+    board, size, moves, elapsedTime, isGameActive, isWon, showHint, hintsRemaining, isSolving,
+    initGame, moveTile, toggleHint, solveFast
   };
 }
