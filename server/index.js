@@ -170,12 +170,20 @@ io.on('connection', (socket) => {
       // Notify both players that game is starting
       room.status = 'playing';
       
-      // Generate a shared seed/board for both players
-      // Using a simple random sequence for a 3x3 board
-      const seed = Array.from({ length: 9 }, (_, i) => (i + 1) % 9);
-      for (let i = seed.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [seed[i], seed[j]] = [seed[j], seed[i]];
+      // Generate a shared solvable board for both players
+      let seed = Array.from({ length: 9 }, (_, i) => (i + 1) % 9);
+      let emptyIndex = seed.indexOf(0);
+      for (let i = 0; i < 100; i++) {
+        const neighbors = [];
+        const row = Math.floor(emptyIndex / 3);
+        const col = emptyIndex % 3;
+        if (row > 0) neighbors.push(emptyIndex - 3);
+        if (row < 2) neighbors.push(emptyIndex + 3);
+        if (col > 0) neighbors.push(emptyIndex - 1);
+        if (col < 2) neighbors.push(emptyIndex + 1);
+        const randomNeighbor = neighbors[Math.floor(Math.random() * neighbors.length)];
+        [seed[emptyIndex], seed[randomNeighbor]] = [seed[randomNeighbor], seed[emptyIndex]];
+        emptyIndex = randomNeighbor;
       }
 
       io.to(roomCode).emit('game-start', {

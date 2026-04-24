@@ -28,39 +28,24 @@ export function useSlidingPuzzle() {
   };
 
   const generateSolvableBoard = (s) => {
-    let newBoard;
-    do {
-      newBoard = Array.from({ length: s * s }, (_, i) => (i + 1) % (s * s));
-      for (let i = newBoard.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [newBoard[i], newBoard[j]] = [newBoard[j], newBoard[i]];
-      }
-    } while (!isSolvable(newBoard, s) || isAlreadySolved(newBoard));
-    
-    return newBoard;
-  };
+    let newBoard = Array.from({ length: s * s }, (_, i) => (i + 1) % (s * s));
+    let emptyIndex = newBoard.indexOf(0);
+    const shuffleMoves = s * s * 30;
 
-  const isSolvable = (flatBoard, s) => {
-    let invCount = 0;
-    for (let i = 0; i < flatBoard.length - 1; i++) {
-      for (let j = i + 1; j < flatBoard.length; j++) {
-        if (flatBoard[i] && flatBoard[j] && flatBoard[i] > flatBoard[j]) {
-          invCount++;
-        }
-      }
-    }
+    for (let i = 0; i < shuffleMoves; i++) {
+      const neighbors = [];
+      const row = Math.floor(emptyIndex / s);
+      const col = emptyIndex % s;
+      if (row > 0) neighbors.push(emptyIndex - s);
+      if (row < s - 1) neighbors.push(emptyIndex + s);
+      if (col > 0) neighbors.push(emptyIndex - 1);
+      if (col < s - 1) neighbors.push(emptyIndex + 1);
 
-    if (s % 2 !== 0) {
-      return invCount % 2 === 0;
-    } else {
-      const emptyIndex = flatBoard.indexOf(0);
-      const emptyRowFromBottom = s - Math.floor(emptyIndex / s);
-      if (emptyRowFromBottom % 2 === 0) {
-        return invCount % 2 !== 0;
-      } else {
-        return invCount % 2 === 0;
-      }
+      const randomNeighbor = neighbors[Math.floor(Math.random() * neighbors.length)];
+      [newBoard[emptyIndex], newBoard[randomNeighbor]] = [newBoard[randomNeighbor], newBoard[emptyIndex]];
+      emptyIndex = randomNeighbor;
     }
+    return isAlreadySolved(newBoard) ? generateSolvableBoard(s) : newBoard;
   };
 
   const isAlreadySolved = (flatBoard) => {
