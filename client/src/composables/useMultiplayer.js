@@ -2,7 +2,8 @@ import { ref, onUnmounted } from 'vue';
 import { io } from 'socket.io-client';
 
 export function useMultiplayer() {
-  const socket = io('http://localhost:3005');
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3005';
+  const socket = io(API_URL);
   const roomCode = ref('');
   const opponent = ref(null);
   const opponentBoard = ref([]);

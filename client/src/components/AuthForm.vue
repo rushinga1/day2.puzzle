@@ -20,7 +20,8 @@ const handleSubmit = async () => {
   
   const endpoint = isLogin.value ? 'login' : 'signup';
   try {
-    const response = await fetch(`http://localhost:3005/api/auth/${endpoint}`, {
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3005';
+    const response = await fetch(`${API_URL}/api/auth/${endpoint}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
